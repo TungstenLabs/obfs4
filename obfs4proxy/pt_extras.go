@@ -25,7 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package main
+package iobfs4proxy
 
 import (
 	"errors"
@@ -35,7 +35,7 @@ import (
 	"os"
 	"strconv"
 
-	"git.torproject.org/pluggable-transports/goptlib.git"
+	"github.com/mtigas/goptlib.git"
 )
 
 // This file contains things that probably should be in goptlib but are not

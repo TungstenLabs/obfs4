@@ -25,7 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package main
+package iobfs4proxy
 
 import (
 	"io"
@@ -36,7 +36,7 @@ import (
 	"syscall"
 	"time"
 
-	"git.torproject.org/pluggable-transports/obfs4.git/common/log"
+	"github.com/mtigas/obfs4.git/common/log"
 )
 
 var termMonitorOSInit func(*termMonitor) error

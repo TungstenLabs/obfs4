@@ -25,7 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package main
+package iobfs4proxy
 
 import (
 	"fmt"

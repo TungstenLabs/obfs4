@@ -27,7 +27,7 @@
 
 // Go language Tor Pluggable Transport suite.  Works only as a managed
 // client/server.
-package main
+package iobfs4proxy
 
 import (
 	"flag"
@@ -43,11 +43,11 @@ import (
 
 	"golang.org/x/net/proxy"
 
-	"git.torproject.org/pluggable-transports/goptlib.git"
-	"git.torproject.org/pluggable-transports/obfs4.git/common/log"
-	"git.torproject.org/pluggable-transports/obfs4.git/common/socks5"
-	"git.torproject.org/pluggable-transports/obfs4.git/transports"
-	"git.torproject.org/pluggable-transports/obfs4.git/transports/base"
+	"github.com/mtigas/goptlib.git"
+	"github.com/mtigas/obfs4.git/common/log"
+	"github.com/mtigas/obfs4.git/common/socks5"
+	"github.com/mtigas/obfs4.git/transports"
+	"github.com/mtigas/obfs4.git/transports/base"
 )
 
 const (
@@ -305,7 +305,7 @@ func getVersion() string {
 	return fmt.Sprintf("obfs4proxy-%s", obfs4proxyVersion)
 }
 
-func main() {
+func Main() {
 	// Initialize the termination state monitor as soon as possible.
 	termMon = newTermMonitor()
 
