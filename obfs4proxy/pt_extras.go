@@ -35,7 +35,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/mtigas/goptlib.git"
+	"github.com/mtigas/goptlib"
 )
 
 // This file contains things that probably should be in goptlib but are not

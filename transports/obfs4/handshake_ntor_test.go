@@ -31,8 +31,8 @@ import (
 	"bytes"
 	"testing"
 
-	"git.torproject.org/pluggable-transports/obfs4.git/common/ntor"
-	"git.torproject.org/pluggable-transports/obfs4.git/common/replayfilter"
+	"github.com/mtigas/obfs4/common/ntor"
+	"github.com/mtigas/obfs4/common/replayfilter"
 )
 
 func TestHandshakeNtorClient(t *testing.T) {

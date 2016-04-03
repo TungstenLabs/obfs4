@@ -40,13 +40,13 @@ import (
 	"syscall"
 	"time"
 
-	"git.torproject.org/pluggable-transports/goptlib.git"
-	"git.torproject.org/pluggable-transports/obfs4.git/common/drbg"
-	"git.torproject.org/pluggable-transports/obfs4.git/common/ntor"
-	"git.torproject.org/pluggable-transports/obfs4.git/common/probdist"
-	"git.torproject.org/pluggable-transports/obfs4.git/common/replayfilter"
-	"git.torproject.org/pluggable-transports/obfs4.git/transports/base"
-	"git.torproject.org/pluggable-transports/obfs4.git/transports/obfs4/framing"
+	"github.com/mtigas/goptlib"
+	"github.com/mtigas/obfs4/common/drbg"
+	"github.com/mtigas/obfs4/common/ntor"
+	"github.com/mtigas/obfs4/common/probdist"
+	"github.com/mtigas/obfs4/common/replayfilter"
+	"github.com/mtigas/obfs4/transports/base"
+	"github.com/mtigas/obfs4/transports/obfs4/framing"
 )
 
 const (

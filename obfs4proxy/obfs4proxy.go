@@ -43,11 +43,11 @@ import (
 
 	"golang.org/x/net/proxy"
 
-	"github.com/mtigas/goptlib.git"
-	"github.com/mtigas/obfs4.git/common/log"
-	"github.com/mtigas/obfs4.git/common/socks5"
-	"github.com/mtigas/obfs4.git/transports"
-	"github.com/mtigas/obfs4.git/transports/base"
+	"github.com/mtigas/goptlib"
+	"github.com/mtigas/obfs4/common/log"
+	"github.com/mtigas/obfs4/common/socks5"
+	"github.com/mtigas/obfs4/transports"
+	"github.com/mtigas/obfs4/transports/base"
 )
 
 const (

@@ -42,11 +42,11 @@ import (
 	"net"
 	"time"
 
-	"git.torproject.org/pluggable-transports/goptlib.git"
-	"git.torproject.org/pluggable-transports/obfs4.git/common/csrand"
-	"git.torproject.org/pluggable-transports/obfs4.git/common/drbg"
-	"git.torproject.org/pluggable-transports/obfs4.git/common/probdist"
-	"git.torproject.org/pluggable-transports/obfs4.git/common/uniformdh"
+	"github.com/mtigas/goptlib"
+	"github.com/mtigas/obfs4/common/csrand"
+	"github.com/mtigas/obfs4/common/drbg"
+	"github.com/mtigas/obfs4/common/probdist"
+	"github.com/mtigas/obfs4/common/uniformdh"
 )
 
 const (

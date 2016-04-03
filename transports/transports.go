@@ -33,12 +33,12 @@ import (
 	"fmt"
 	"sync"
 
-	"git.torproject.org/pluggable-transports/obfs4.git/transports/base"
-	"git.torproject.org/pluggable-transports/obfs4.git/transports/meeklite"
-	"git.torproject.org/pluggable-transports/obfs4.git/transports/obfs2"
-	"git.torproject.org/pluggable-transports/obfs4.git/transports/obfs3"
-	"git.torproject.org/pluggable-transports/obfs4.git/transports/obfs4"
-	"git.torproject.org/pluggable-transports/obfs4.git/transports/scramblesuit"
+	"github.com/mtigas/obfs4/transports/base"
+	"github.com/mtigas/obfs4/transports/meeklite"
+	"github.com/mtigas/obfs4/transports/obfs2"
+	"github.com/mtigas/obfs4/transports/obfs3"
+	"github.com/mtigas/obfs4/transports/obfs4"
+	"github.com/mtigas/obfs4/transports/scramblesuit"
 )
 
 var transportMapLock sync.Mutex
