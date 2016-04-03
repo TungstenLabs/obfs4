@@ -86,7 +86,16 @@ func clientSetup() (launched bool, listeners []net.Listener) {
 			continue
 		}
 
-		ln, err := net.Listen("tcp", socksAddr)
+		// TODO: remove port hardcoding once we figure out how to
+		//       communicate better with the parent iObfs thread
+		realSocksAddr := socksAddr
+		if name == "obfs4" {
+			realSocksAddr = "127.0.0.1:47351"
+		} else if name == "meek_lite" {
+			realSocksAddr = "127.0.0.1:47352"
+		}
+
+		ln, err := net.Listen("tcp", realSocksAddr)
 		if err != nil {
 			pt.CmethodError(name, err.Error())
 			continue
