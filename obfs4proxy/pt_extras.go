@@ -59,7 +59,7 @@ func ptProxyDone() {
 }
 
 func ptIsClient() (bool, error) {
-	clientEnv := os.Getenv("TOR_PT_CLIENT_TRANSPORTS")
+	clientEnv := "obfs4,meek_lite" //os.Getenv("TOR_PT_CLIENT_TRANSPORTS")
 	serverEnv := os.Getenv("TOR_PT_SERVER_TRANSPORTS")
 	if clientEnv != "" && serverEnv != "" {
 		return false, ptEnvError("TOR_PT_[CLIENT,SERVER]_TRANSPORTS both set")
