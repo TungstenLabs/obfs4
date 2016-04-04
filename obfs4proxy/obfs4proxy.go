@@ -93,6 +93,12 @@ func clientSetup() (launched bool, listeners []net.Listener) {
 			realSocksAddr = "127.0.0.1:47351"
 		} else if name == "meek_lite" {
 			realSocksAddr = "127.0.0.1:47352"
+		} else if name == "obfs2" {
+			realSocksAddr = "127.0.0.1:47353"
+		} else if name == "obfs3" {
+			realSocksAddr = "127.0.0.1:47354"
+		} else if name == "scramblesuit" {
+			realSocksAddr = "127.0.0.1:47355"
 		}
 
 		ln, err := net.Listen("tcp", realSocksAddr)
