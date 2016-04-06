@@ -37,7 +37,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mtigas/goptlib"
+	"git.torproject.org/pluggable-transports/goptlib.git"
 	"github.com/mtigas/obfs4/common/csrand"
 	"github.com/mtigas/obfs4/common/drbg"
 	"github.com/mtigas/obfs4/common/ntor"

@@ -40,7 +40,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/mtigas/goptlib"
+	"git.torproject.org/pluggable-transports/goptlib.git"
 	"github.com/mtigas/obfs4/common/csrand"
 	"github.com/mtigas/obfs4/common/uniformdh"
 	"github.com/mtigas/obfs4/transports/base"

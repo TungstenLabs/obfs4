@@ -46,7 +46,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mtigas/goptlib"
+	"git.torproject.org/pluggable-transports/goptlib.git"
 )
 
 const (

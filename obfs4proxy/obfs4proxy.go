@@ -43,7 +43,7 @@ import (
 
 	"golang.org/x/net/proxy"
 
-	"github.com/mtigas/goptlib"
+	"git.torproject.org/pluggable-transports/goptlib.git"
 	"github.com/mtigas/obfs4/common/log"
 	"github.com/mtigas/obfs4/common/socks5"
 	"github.com/mtigas/obfs4/transports"
@@ -323,6 +323,19 @@ func getVersion() string {
 func Main() {
 	// Initialize the termination state monitor as soon as possible.
 	termMon = newTermMonitor()
+
+	// iObfs hack: set some environment variables that are either
+	// required, or values that we want. have to do this since iOS
+	// launches this in a subprocess and our application has limited
+	// control over actual environment vars.
+	os.Setenv("TOR_PT_CLIENT_TRANSPORTS", "obfs4,meek_lite,obfs2,obfs3,scramblesuit")
+	os.Setenv("TOR_PT_MANAGED_TRANSPORT_VER", "1")
+
+	tmpdir := os.Getenv("TMPDIR")
+	if (tmpdir == "") {
+		os.Exit(1)
+	}
+	os.Setenv("TOR_PT_STATE_LOCATION", tmpdir+"/pt_state")
 
 	// Handle the command line arguments.
 	_, execName := path.Split(os.Args[0])

@@ -33,7 +33,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/mtigas/goptlib"
+	"git.torproject.org/pluggable-transports/goptlib.git"
 	"github.com/mtigas/obfs4/transports/base"
 )
 

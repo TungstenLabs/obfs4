@@ -32,7 +32,7 @@ package base
 import (
 	"net"
 
-	"github.com/mtigas/goptlib"
+	"git.torproject.org/pluggable-transports/goptlib.git"
 )
 
 type DialFunc func(string, string) (net.Conn, error)
