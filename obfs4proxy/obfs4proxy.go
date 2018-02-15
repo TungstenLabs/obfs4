@@ -29,8 +29,7 @@
 // client/server.
 package iobfs4proxy
 
-import (
-	"flag"
+import (	
 	"fmt"
 	"io"
 	golog "log"
@@ -39,7 +38,7 @@ import (
 	"os"
 	"path"
 	"sync"
-	"syscall"
+	"syscall"	
 
 	"golang.org/x/net/proxy"
 
@@ -58,6 +57,9 @@ const (
 
 var stateDir string
 var termMon *termMonitor
+var forceQuit bool = false
+var copyLoopWaitGroup sync.WaitGroup
+var ptListeners []net.Listener
 
 func clientSetup() (launched bool, listeners []net.Listener) {
 	ptClientInfo, err := pt.ClientSetup(transports.Transports())
@@ -101,6 +103,7 @@ func clientSetup() (launched bool, listeners []net.Listener) {
 			realSocksAddr = "127.0.0.1:47355"
 		}
 
+
 		ln, err := net.Listen("tcp", realSocksAddr)
 		if err != nil {
 			pt.CmethodError(name, err.Error())
@@ -120,9 +123,9 @@ func clientSetup() (launched bool, listeners []net.Listener) {
 	return
 }
 
-func clientAcceptLoop(f base.ClientFactory, ln net.Listener, proxyURI *url.URL) error {
+func clientAcceptLoop(f base.ClientFactory, ln net.Listener, proxyURI *url.URL) error {	
 	defer ln.Close()
-	for {
+	for forceQuit == false {
 		conn, err := ln.Accept()
 		if err != nil {
 			if e, ok := err.(net.Error); ok && !e.Temporary() {
@@ -130,8 +133,20 @@ func clientAcceptLoop(f base.ClientFactory, ln net.Listener, proxyURI *url.URL) 
 			}
 			continue
 		}
+		if forceQuit == true {
+			fmt.Printf("Force quit detected! Closing connection...")
+			conn.Close()
+			fmt.Printf("Done!\n")
+			break
+		}
 		go clientHandler(f, conn, proxyURI)
 	}
+	if forceQuit == true {
+		fmt.Printf("Force quit detected! Closing listener...")
+		ln.Close()
+		fmt.Printf("Done!\n")		
+	}	
+	return nil
 }
 
 func clientHandler(f base.ClientFactory, conn net.Conn, proxyURI *url.URL) {
@@ -235,9 +250,9 @@ func serverSetup() (launched bool, listeners []net.Listener) {
 	return
 }
 
-func serverAcceptLoop(f base.ServerFactory, ln net.Listener, info *pt.ServerInfo) error {
+func serverAcceptLoop(f base.ServerFactory, ln net.Listener, info *pt.ServerInfo) error {	
 	defer ln.Close()
-	for {
+	for forceQuit == false {
 		conn, err := ln.Accept()
 		if err != nil {
 			if e, ok := err.(net.Error); ok && !e.Temporary() {
@@ -246,7 +261,8 @@ func serverAcceptLoop(f base.ServerFactory, ln net.Listener, info *pt.ServerInfo
 			continue
 		}
 		go serverHandler(f, conn, info)
-	}
+	}	
+	return nil
 }
 
 func serverHandler(f base.ServerFactory, conn net.Conn, info *pt.ServerInfo) {
@@ -286,33 +302,30 @@ func copyLoop(a net.Conn, b net.Conn) error {
 	// Note: b is always the pt connection.  a is the SOCKS/ORPort connection.
 	errChan := make(chan error, 2)
 
-	var wg sync.WaitGroup
-	wg.Add(2)
+	// var wg sync.WaitGroup
+	copyLoopWaitGroup.Add(2)
 
-	go func() {
-		defer wg.Done()
+	go func() {		
 		defer b.Close()
-		defer a.Close()
-		_, err := io.Copy(b, a)
+		defer a.Close()		
+		_, err := io.Copy(b, a)		
 		errChan <- err
 	}()
-	go func() {
-		defer wg.Done()
+	go func() {		
 		defer a.Close()
-		defer b.Close()
-		_, err := io.Copy(a, b)
+		defer b.Close()		
+		_, err := io.Copy(a, b)		
 		errChan <- err
 	}()
 
 	// Wait for both upstream and downstream to close.  Since one side
 	// terminating closes the other, the second error in the channel will be
 	// something like EINVAL (though io.Copy() will swallow EOF), so only the
-	// first error is returned.
-	wg.Wait()
+	// first error is returned.	
+	copyLoopWaitGroup.Wait()
 	if len(errChan) > 0 {
 		return <-errChan
-	}
-
+	}	
 	return nil
 }
 
@@ -320,8 +333,26 @@ func getVersion() string {
 	return fmt.Sprintf("obfs4proxy-%s", obfs4proxyVersion)
 }
 
+func Close() {
+	fmt.Printf("Shutting down obfsproxy...\n")
+	for _, ln := range ptListeners {
+		fmt.Printf("Closing listener [%s] ...", ln)		
+		ln.Close()
+		fmt.Printf("done!\n")
+	}
+	ptListeners = ptListeners[:0]
+	copyLoopWaitGroup.Done()
+	copyLoopWaitGroup.Done()
+	copyLoopWaitGroup.Done()
+	copyLoopWaitGroup.Done()
+	forceQuit = true
+	termMon.forceQuit = true
+	fmt.Printf("Done!\n")
+}
+
 func Main() {
 	// Initialize the termination state monitor as soon as possible.
+	forceQuit = false	
 	termMon = newTermMonitor()
 
 	// iObfs hack: set some environment variables that are either
@@ -339,22 +370,8 @@ func Main() {
 
 	// Handle the command line arguments.
 	_, execName := path.Split(os.Args[0])
-	showVer := flag.Bool("version", false, "Print version and exit")
-	logLevelStr := flag.String("logLevel", "ERROR", "Log level (ERROR/WARN/INFO/DEBUG)")
-	enableLogging := flag.Bool("enableLogging", false, "Log to TOR_PT_STATE_LOCATION/"+obfs4proxyLogFile)
-	unsafeLogging := flag.Bool("unsafeLogging", false, "Disable the address scrubber")
-	flag.Parse()
 
-	if *showVer {
-		fmt.Printf("%s\n", getVersion())
-		os.Exit(0)
-	}
-	if err := log.SetLogLevel(*logLevelStr); err != nil {
-		golog.Fatalf("[ERROR]: %s - failed to set log level: %s", execName, err)
-	}
-
-	// Determine if this is a client or server, initialize the common state.
-	var ptListeners []net.Listener
+	// Determine if this is a client or server, initialize the common state.	
 	launched := false
 	isClient, err := ptIsClient()
 	if err != nil {
@@ -362,9 +379,6 @@ func Main() {
 	}
 	if stateDir, err = pt.MakeStateDir(); err != nil {
 		golog.Fatalf("[ERROR]: %s - No state directory: %s", execName, err)
-	}
-	if err = log.Init(*enableLogging, path.Join(stateDir, obfs4proxyLogFile), *unsafeLogging); err != nil {
-		golog.Fatalf("[ERROR]: %s - failed to initialize logging", execName)
 	}
 	if err = transports.Init(); err != nil {
 		log.Errorf("%s - failed to initialize transports: %s", execName, err)
@@ -388,7 +402,7 @@ func Main() {
 	}
 
 	log.Infof("%s - accepting connections", execName)
-	defer func() {
+	defer func() {		
 		log.Noticef("%s - terminated", execName)
 	}()
 
@@ -396,15 +410,15 @@ func Main() {
 	// connections will be processed.  Wait till the parent dies
 	// (immediate exit), a SIGTERM is received (immediate exit),
 	// or a SIGINT is received.
-	if sig := termMon.wait(false); sig == syscall.SIGTERM {
+	if sig := termMon.wait(false); sig == syscall.SIGTERM {		
 		return
 	}
 
 	// Ok, it was the first SIGINT, close all listeners, and wait till,
 	// the parent dies, all the current connections are closed, or either
-	// a SIGINT/SIGTERM is received, and exit.
-	for _, ln := range ptListeners {
-		ln.Close()
+	// a SIGINT/SIGTERM is received, and exit.	
+	for _, ln := range ptListeners {		
+		ln.Close()		
 	}
-	termMon.wait(true)
+	termMon.wait(true)	
 }

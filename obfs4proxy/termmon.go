@@ -45,6 +45,7 @@ type termMonitor struct {
 	sigChan     chan os.Signal
 	handlerChan chan int
 	numHandlers int
+	forceQuit bool
 }
 
 func (m *termMonitor) onHandlerStart() {
@@ -59,7 +60,7 @@ func (m *termMonitor) wait(termOnNoHandlers bool) os.Signal {
 	// Block until a signal has been received, or (optionally) the
 	// number of pending handlers has hit 0.  In the case of the
 	// latter, treat it as if a SIGTERM has been received.
-	for {
+	for m.forceQuit == false {
 		select {
 		case n := <-m.handlerChan:
 			m.numHandlers += n
@@ -69,7 +70,8 @@ func (m *termMonitor) wait(termOnNoHandlers bool) os.Signal {
 		if termOnNoHandlers && m.numHandlers == 0 {
 			return syscall.SIGTERM
 		}
-	}
+	}	
+	return syscall.SIGTERM
 }
 
 func (m *termMonitor) termOnStdinClose() {
@@ -80,6 +82,7 @@ func (m *termMonitor) termOnStdinClose() {
 	// that stdin is closed, and treat that as having received a
 	// SIGTERM.
 	log.Noticef("Stdin is closed or unreadable: %v", err)
+
 	m.sigChan <- syscall.SIGTERM
 }
 
@@ -93,7 +96,7 @@ func (m *termMonitor) termOnPPIDChange(ppid int) {
 	// Getppid() call was issued in our parent, but, this is better
 	// than nothing.
 	const ppidPollInterval = 1 * time.Second
-	for ppid == os.Getppid() {
+	for ppid == os.Getppid() && m.forceQuit == false {
 		time.Sleep(ppidPollInterval)
 	}
 
@@ -106,6 +109,7 @@ func (m *termMonitor) termOnPPIDChange(ppid int) {
 func newTermMonitor() (m *termMonitor) {
 	ppid := os.Getppid()
 	m = new(termMonitor)
+	m.forceQuit = false
 	m.sigChan = make(chan os.Signal)
 	m.handlerChan = make(chan int)
 	signal.Notify(m.sigChan, syscall.SIGINT, syscall.SIGTERM)
