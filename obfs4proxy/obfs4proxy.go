@@ -47,6 +47,7 @@ import (
 	"github.com/mtigas/obfs4/common/socks5"
 	"github.com/mtigas/obfs4/transports"
 	"github.com/mtigas/obfs4/transports/base"
+	"math"
 )
 
 const (
@@ -59,6 +60,7 @@ var stateDir string
 var termMon *termMonitor
 var forceQuit bool = false
 var copyLoopWaitGroup sync.WaitGroup
+var copyLoopWaitGroupCount int = 0
 var ptListeners []net.Listener
 
 func clientSetup() (launched bool, listeners []net.Listener) {
@@ -304,8 +306,12 @@ func copyLoop(a net.Conn, b net.Conn) error {
 
 	// var wg sync.WaitGroup
 	copyLoopWaitGroup.Add(2)
+	copyLoopWaitGroupCount := copyLoopWaitGroupCount + 2
 
-	go func() {		
+	go func() {
+		defer {
+			copyLoopWaitGroupCount := math.max(copyLoopWaitGroupCount - 2, 0)
+		}
 		defer b.Close()
 		defer a.Close()		
 		_, err := io.Copy(b, a)		
@@ -341,10 +347,10 @@ func Close() {
 		fmt.Printf("done!\n")
 	}
 	ptListeners = ptListeners[:0]
-	copyLoopWaitGroup.Done()
-	copyLoopWaitGroup.Done()
-	copyLoopWaitGroup.Done()
-	copyLoopWaitGroup.Done()
+	for i := 0; i < copyLoopWaitGroupCount; i++ {
+		copyLoopWaitGroup.Done()
+	}
+	copyLoopWaitGroupCount := 0
 	forceQuit = true
 	termMon.forceQuit = true
 	fmt.Printf("Done!\n")
